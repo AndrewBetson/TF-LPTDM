@@ -17,8 +17,8 @@ LPTDM exposes the following console elements:
 - `sv_lptdm_medieval_vote_percentage (def. 0.60)`	- Percent of players that need to vote yes to enable Medieval Mode.
 
 # Dependencies
-[nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)
-[tf2attributes](https://forums.alliedmods.net/showthread.php?t=210221)
+[nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)  
+[tf2attributes](https://forums.alliedmods.net/showthread.php?t=210221)  
 [morecolors](https://raw.githubusercontent.com/DoctorMcKay/sourcemod-plugins/master/scripting/include/morecolors.inc) *(compilation only)*
 
 # Notes
