@@ -243,7 +243,7 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 
 Action Event_PostInventoryApplication_Medieval( Handle hEvent, char[] szName, bool bDontBroadcast )
 {
-	if ( !g_bIsMedievalModeActive || !sv_lptdm_medieval_healthkit_enable.BoolValue )
+	if ( !g_bIsMedievalModeActive )
 	{
 		return Plugin_Handled;
 	}
@@ -258,7 +258,7 @@ Action Event_PostInventoryApplication_Medieval( Handle hEvent, char[] szName, bo
 
 Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 {
-	if ( !g_bIsMedievalModeActive )
+	if ( !g_bIsMedievalModeActive || !sv_lptdm_medieval_healthkit_enable.BoolValue )
 	{
 		return Plugin_Handled;
 	}
