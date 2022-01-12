@@ -39,7 +39,7 @@ Handle	g_hSDKCall_TFPlayer_DropHealthPack;
 void OnPluginStart_Medieval()
 {
 	RegConsoleCmd( "sm_medievalvote", Cmd_MedievalVote, "Initiate a vote to enable Medieval Mode." );
-	RegAdminCmd( "sm_forcemedieval", Cmd_ForceMedieval, ADMFLAG_GENERIC, "Force the server into Medieval Mode." );
+	RegAdminCmd( "sm_forcemedieval", Cmd_ForceMedieval, ADMFLAG_SLAY, "Force the server into Medieval Mode." );
 
 	sv_lptdm_medieval_healthkit_enable = CreateConVar( "sv_lptdm_medieval_healthkit_enable", "1", "Whether players should drop small healthkits when they are killed or not.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 
