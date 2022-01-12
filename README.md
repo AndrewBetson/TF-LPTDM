@@ -8,12 +8,14 @@ Allows players to disable their ability to get random crits.
 
 # Console Elements
 LPTDM exposes the following console elements:
-- `sm_selfcrits`									- Disables the calling players ability to get random crits.
-- `sm_medievalvote`									- Initiates a vote to enable Medieval Mode.
-- `sm_forcemedieval`								- Forces the server into Medieval Mode. Requires >=ADMFLAG_SLAY command privilege.
-- `sv_lptdm_medieval_healthkit_enable (def 1)`		- Whether players should drop small healthkits when they are killed or not.
-- `sv_lptdm_medieval_vote_cooldown (def. 240)`		- Time, in seconds, after a failed Medieval vote before another can be started.
-- `sv_lptdm_medieval_vote_percentage (def. 0.60)`	- Percent of players that need to vote yes to enable Medieval Mode.
+| Name | Description | Default | Notes |
+|------|------|------|------|
+| `sm_selfcrits` | Disable the calling players ability to get random crits. | N/A | None |
+| `sm_medievalvote` | Initiate a vote to enable Medieval Mode. | N/A | None |
+| `sm_forcemedieval` | Force the server into Medieval Mode. | N/A | Requires >= ADMFLAG_SLAY command privilege |
+| `sv_lptdm_medieval_healthkit_enable` | Whether players should drop small healthkits upon death or not. | 1 | None |
+| `sv_lptdm_medieval_vote_cooldown` | Time, in seconds, after a failed Medieval vote before another can be started. | 240 | None |
+| `sv_lptdm_medieval_vote_percentage` | Percentage of players in the server that need to vote yes for Medieval Mode to be enabled. | 0.60 | None |
 
 # Dependencies
 [nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)  
