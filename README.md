@@ -12,7 +12,6 @@ LPTDM exposes the following console elements:
 - `sm_medievalvote`									- Initiates a vote to enable Medieval Mode.
 - `sm_forcemedieval`								- Forces the server into Medieval Mode. Requires >=ADMFLAG_GENERIC command privilege.
 - `sv_lptdm_medieval_healthkit_enable (def 1)`		- Whether players should drop small healthkits when they are killed or not.
-- `sv_lptdm_medieval_healthkit_lifetime (def. 30)`	- Time, in seconds, that the small healthkit dropped by a player on death should stay in the world.
 - `sv_lptdm_medieval_vote_cooldown (def. 240)`		- Time, in seconds, after a failed Medieval vote before another can be started.
 - `sv_lptdm_medieval_vote_percentage (def. 0.60)`	- Percent of players that need to vote yes to enable Medieval Mode.
 
@@ -31,8 +30,6 @@ LPTDM exposes the following console elements:
 
 # TODO
 ### Medieval
-- Make death healthkits fall faster and smoother like in actual Medieval Mode.
-- Optimize death healthkit removal. Having potentially upwards of 20 timers running concurrently, 15 of which being for healthpacks which have already been picked up, is not good.
 - Only remove non-Medieval compatible `tf_dropped_weapon` entities when Medieval is enabled.
 - Add params to `sm_forcemedieval` for duration and filters. (map, until disabled, only RED, only BLU, etc.)
 

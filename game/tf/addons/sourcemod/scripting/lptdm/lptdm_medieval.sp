@@ -25,7 +25,6 @@
 #define SF_NORESPAWN ( 1 << 30 )
 
 ConVar	sv_lptdm_medieval_healthkit_enable;
-ConVar	sv_lptdm_medieval_healthkit_lifetime;
 
 ConVar	sv_lptdm_medieval_vote_cooldown;
 ConVar	sv_lptdm_medieval_vote_percentage;
@@ -35,12 +34,13 @@ bool	g_bIsMedievalModeActive;
 
 int		g_nLastVoteTime;
 
+Handle	g_hSDKCall_TFPlayer_DropHealthPack;
+
 void OnPluginStart_Medieval()
 {
 	RegConsoleCmd( "sm_medievalvote", Cmd_MedievalVote, "Initiate a vote to enable Medieval Mode." );
 	RegAdminCmd( "sm_forcemedieval", Cmd_ForceMedieval, ADMFLAG_GENERIC, "Force the server into Medieval Mode." );
 
-	sv_lptdm_medieval_healthkit_lifetime = CreateConVar( "sv_lptdm_medieval_healthkit_lifetime", "30.0", "Time, in seconds, that the small healthkit dropped by a player on death should stay in the world.", 0, true, 0.01 );
 	sv_lptdm_medieval_healthkit_enable = CreateConVar( "sv_lptdm_medieval_healthkit_enable", "1", "Whether players should drop small healthkits when they are killed or not.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 
 	sv_lptdm_medieval_vote_cooldown = CreateConVar( "sv_lptdm_medieval_vote_cooldown", "240", "Time, in seconds, after a failed Medieval Vote before another can be started.", FCVAR_NOTIFY, true, 0.0 );
@@ -49,6 +49,20 @@ void OnPluginStart_Medieval()
 	HookConVarChange( sv_lptdm_medieval_vote_cooldown, ConVar_OnCooldownChanged );
 	HookEvent( "post_inventory_application", Event_PostInventoryApplication_Medieval, EventHookMode_Post );
 	HookEvent( "player_death", Event_PlayerDeath, EventHookMode_Post );
+
+	// SDKCall for CTFPlayer::DropHealthPack()
+	StartPrepSDKCall( SDKCall_Player );
+	{
+		PrepSDKCall_SetSignature( SDKLibrary_Server, "@_ZN9CTFPlayer14DropHealthPackERK15CTakeDamageInfob", -1 );
+		PrepSDKCall_SetReturnInfo( SDKType_PlainOldData, SDKPass_Plain );
+
+		// Don't know why this function even has these params,
+		// since neither of them seem to actually be used by it...
+		PrepSDKCall_AddParameter( SDKType_PlainOldData, SDKPass_ByRef ); // CTakeDamageInfo *
+		PrepSDKCall_AddParameter( SDKType_Bool, SDKPass_ByValue );
+	}
+
+	g_hSDKCall_TFPlayer_DropHealthPack = EndPrepSDKCall();
 }
 
 void OnMapStart_Medieval()
@@ -221,8 +235,8 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 
 		int nWeaponItemDefinitionIdx = GetEntProp( nWeaponIdx, Prop_Send, "m_iItemDefinitionIndex" );
 		int nAttributes[ 16 ];
-		float nValues[ 16 ];
-		int nNumAttributes = TF2Attrib_GetStaticAttribs( nWeaponItemDefinitionIdx, nAttributes, nValues );
+		float flValues[ 16 ];
+		int nNumAttributes = TF2Attrib_GetStaticAttribs( nWeaponItemDefinitionIdx, nAttributes, flValues );
 
 		bool bIsWeaponMedievalCompatible = false;
 		for ( int nAttribIdx = 0; nAttribIdx <= nNumAttributes; nAttribIdx++ )
@@ -272,46 +286,7 @@ Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 		return Plugin_Handled;
 	}
 
-	int nHealthkitEnt = CreateEntityByName( "item_healthkit_small" );
-	if ( !IsValidEdict( nHealthkitEnt ) )
-	{
-		return Plugin_Handled;
-	}
-
-	DispatchSpawn( nHealthkitEnt );
-	ActivateEntity( nHealthkitEnt );
-
-	// Get the world-space origin of the victim.
-
-	// This is the location roughly between the players feet.
-	float vVictimOrigin[ 3 ];
-	GetClientAbsOrigin( nVictim, vVictimOrigin );
-
-	// This defines the actual extents of the players body.
-	float vVictimMaxes[ 3 ];
-	GetEntPropVector( nVictim, Prop_Data, "m_vecMaxs", vVictimMaxes );
-
-	// Add the z component of the players extents divided by 2 to the z component of the origin to get the point halfway up their body.
-	vVictimOrigin[ 2 ] += vVictimMaxes[ 2 ] / 2.0;
-
-	// Spawn going in a random direction on the x and y axes.
-	float vHealthkitVelocity[ 3 ];
-	vHealthkitVelocity[ 0 ] = GetRandomFloat( -1.0, 1.0 );
-	vHealthkitVelocity[ 1 ] = GetRandomFloat( -1.0, 1.0 );
-	vHealthkitVelocity[ 2 ] = 1.0; // always go directly up
-
-	NormalizeVector( vHealthkitVelocity, vHealthkitVelocity );
-	ScaleVector( vHealthkitVelocity, 300.0 ); // 300 seems close enough to how fast they come out in actual Medieval Mode.
-
-	// Make the healthkit not respawn, move through the air, and bounce upon collision.
-	SetEntProp( nHealthkitEnt, Prop_Data, "m_spawnflags", SF_NORESPAWN );
-	SetEntityMoveType( nHealthkitEnt, MOVETYPE_FLYGRAVITY );
-	SetEntProp( nHealthkitEnt, Prop_Send, "movecollide", MOVECOLLIDE_BOUNCE );
-
-	TeleportEntity( nHealthkitEnt, vVictimOrigin, NULL_VECTOR, vHealthkitVelocity );
-
-	// Destroy the healthkit after it's been alive for a while.
-	CreateTimer( sv_lptdm_medieval_healthkit_lifetime.FloatValue, Timer_RemoveDeathHealthkit, EntIndexToEntRef( nHealthkitEnt ) );
+	SDKCall( g_hSDKCall_TFPlayer_DropHealthPack, nVictim, 0, false );
 
 	return Plugin_Handled;
 }
@@ -361,18 +336,4 @@ void NVCallback_VoteFinished(
 
 	hMenu.DisplayPass( "%t", "LPTDM_MV_VoteSucceeded" );
 	EnableMedievalMode();
-}
-
-Action Timer_RemoveDeathHealthkit( Handle hHandle, any aData )
-{
-	int nEntIdx = EntRefToEntIndex( view_as< int >( aData ) );
-
-	if ( nEntIdx == -1 )
-	{
-		return Plugin_Handled;
-	}
-
-	RemoveEntity( nEntIdx );
-
-	return Plugin_Handled;
 }
