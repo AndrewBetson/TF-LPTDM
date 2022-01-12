@@ -31,6 +31,7 @@ ConVar	sv_lptdm_medieval_vote_percentage;
 
 bool	g_bCanCallMedievalVote;
 bool	g_bIsMedievalModeActive;
+bool	g_bIsMapAlreadyMedieval;
 
 int		g_nLastVoteTime;
 
@@ -68,8 +69,9 @@ void OnPluginStart_Medieval()
 void OnMapStart_Medieval()
 {
 	// Don't allow Medieval Votes to be called if this is already a Medieval map.
-	g_bIsMedievalModeActive = ( FindEntityByClassname( -1, "tf_logic_medieval" ) ) != -1;
-	g_bCanCallMedievalVote = !g_bIsMedievalModeActive;
+	g_bIsMapAlreadyMedieval = ( FindEntityByClassname( -1, "tf_logic_medieval" ) ) != -1;
+	g_bIsMedievalModeActive = false;
+	g_bCanCallMedievalVote = !g_bIsMapAlreadyMedieval;
 }
 
 Action Cmd_MedievalVote( int nClientIdx, int nNumArgs )
@@ -114,7 +116,7 @@ Action Cmd_MedievalVote( int nClientIdx, int nNumArgs )
 
 Action Cmd_ForceMedieval( int nClientIdx, int nNumArgs )
 {
-	if ( g_bIsMedievalModeActive )
+	if ( g_bIsMedievalModeActive || g_bIsMapAlreadyMedieval )
 	{
 		CPrintToChat( nClientIdx, "%t", "LPTDM_MV_Force_AlreadyMedieval" );
 		return Plugin_Handled;
@@ -257,7 +259,7 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 
 Action Event_PostInventoryApplication_Medieval( Handle hEvent, char[] szName, bool bDontBroadcast )
 {
-	if ( !g_bIsMedievalModeActive )
+	if ( !g_bIsMedievalModeActive || g_bIsMapAlreadyMedieval )
 	{
 		return Plugin_Handled;
 	}
@@ -272,7 +274,7 @@ Action Event_PostInventoryApplication_Medieval( Handle hEvent, char[] szName, bo
 
 Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 {
-	if ( !g_bIsMedievalModeActive || !sv_lptdm_medieval_healthkit_enable.BoolValue )
+	if ( !g_bIsMedievalModeActive || g_bIsMapAlreadyMedieval || !sv_lptdm_medieval_healthkit_enable.BoolValue )
 	{
 		return Plugin_Handled;
 	}
