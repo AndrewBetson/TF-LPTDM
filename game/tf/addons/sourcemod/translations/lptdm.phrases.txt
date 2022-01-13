@@ -2,27 +2,27 @@
 {
 	"LPTDM_SC_Enabled"
 	{
-		"en"	"{purple}[LPTDM]{default} You can get random crits again!"
+		"en"	"{green}[Self Crits]{default} You can get random crits again!"
 	}
 
 	"LPTDM_SC_Disabled"
 	{
-		"en"	"{purple}[LPTDM]{default} You can no longer get random crits."
+		"en"	"{green}[Self Crits]{default} You can no longer get random crits."
 	}
 
 	"LPTDM_MV_CannotCallVote_AlreadyMedieval"
 	{
-		"en"	"{purple}[LPTDM]{default} Can't initiate a Medieval Vote while Medieval Mode is already active."
+		"en"	"{green}[Medieval Votes]{default} Can't initiate a Medieval vote while Medieval Mode is already active."
 	}
 
 	"LPTDM_MV_Forced"
 	{
-		"en"	"{purple}[LPTDM]{default} The server has been forced into Medieval Mode!"
+		"en"	"{green}[Medieval Votes]{default} The server has been forced into Medieval Mode!"
 	}
 
 	"LPTDM_MV_Force_AlreadyMedieval"
 	{
-		"en"	"{purple}[LPTDM]{default} Can't force Medieval Mode while it's already active."
+		"en"	"{green}[Medieval Votes]{default} Can't force Medieval Mode while it's already active."
 	}
 
 	"LPTDM_MV_VoteTitle"
