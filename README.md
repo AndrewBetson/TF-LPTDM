@@ -25,14 +25,14 @@ LPTDM exposes the following console elements:
 # Notes
 ### Medieval
 - Enabling *actual* Medieval Mode requires a mapchange, so a successful Medieval vote actually enables a sort of faux-Medieval Mode instead, which I've tried to make as functionally similar to real Medieval Mode as possible.
-- Currently, *all* dropped weapons get removed from the world when a Medieval vote is passed. In the future, I would like for only *non-Medieval compatible* dropped weapons to be removed.
+- Currently, *all* dropped weapons get removed from the world when a Medieval vote is passed. In the future, I would like for only *Medieval incompatible* dropped weapons to be removed.
 - As a result of the first note, `tf_medieval_autorp` and `tf_medieval_thirdperson` do not function.
 ### Self Crits
 - Due to a quirk in how random crits are calculated, attacks that otherwise would have been random crits will still play crit sounds/particles/anims on the clients of players that have self crits disabled.
 
 # TODO
 ### Medieval
-- Only remove non-Medieval compatible `tf_dropped_weapon` entities when Medieval is enabled.
+- Only remove Medieval incompatible `tf_dropped_weapon` entities when Medieval is enabled.
 - Add params to `sm_forcemedieval` for duration and filters. (map, until disabled, only RED, only BLU, etc.)
 
 # License

@@ -21,9 +21,6 @@
  * NativeVotes	(C)2011-2016 Ross Bemrose (Powerlord). (nativevotes mapchooser)
  */
 
-#define MOVECOLLIDE_BOUNCE 1
-#define SF_NORESPAWN ( 1 << 30 )
-
 ConVar	sv_lptdm_medieval_healthkit_enable;
 
 ConVar	sv_lptdm_medieval_vote_cooldown;
@@ -68,7 +65,7 @@ void OnPluginStart_Medieval()
 
 void OnMapStart_Medieval()
 {
-	// Don't allow Medieval Votes to be called if this is already a Medieval map.
+	// Don't allow Medieval votes to be called if this is already a Medieval map.
 	g_bIsMapAlreadyMedieval = ( FindEntityByClassname( -1, "tf_logic_medieval" ) ) != -1;
 	g_bIsMedievalModeActive = false;
 	g_bCanCallMedievalVote = !g_bIsMapAlreadyMedieval;
@@ -143,7 +140,7 @@ void EnableMedievalMode()
 {
 	g_bIsMedievalModeActive = true;
 
-	// Remove non-Medieval Mode compatible weapons from living players' loadouts.
+	// Remove Medieval incompatible weapons from living players' loadouts.
 	for ( int nClientIdx = 1; nClientIdx <= MaxClients; nClientIdx++ )
 	{
 		if ( !IsClientInGame( nClientIdx ) || !IsPlayerAlive( nClientIdx ) )
@@ -154,7 +151,7 @@ void EnableMedievalMode()
 		RemoveNonMedievalWeaponsFromClient( nClientIdx );
 	}
 
-	// Remove non-Medieval compatible projectiles from the world.
+	// Remove Medieval incompatible projectiles from the world.
 
 	int nEntIdx;
 	while ( ( nEntIdx = FindEntityByClassname( nEntIdx, "tf_projectile_flare" ) ) != -1 )			RemoveEntity( nEntIdx );
@@ -192,11 +189,11 @@ void EnableMedievalMode()
 	}
 
 	// Remove dropped weapons from the world to avoid players being able to
-	// pick up non-Medieval compatible weapons that were dropped before
+	// pick up Medieval incompatible weapons that were dropped before
 	// Medieval Mode was enabled and occupy the same slot as a weapon
 	// they have equipped that *is* compatible with Medieval Mode.
 	// (gunboats/lunchbox -> shotgun, mad milk/bonk/cola/guillotine -> pistol, bootlegger/booties -> grenade launcher, etc.)
-	// TODO(AndrewB): Only remove non-Medieval compatible dropped weapons.
+	// TODO(AndrewB): Only remove Medieval incompatible dropped weapons.
 
 	while ( ( nEntIdx = FindEntityByClassname( nEntIdx, "tf_dropped_weapon" ) ) != -1 )
 	{
@@ -209,7 +206,7 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 	// Force the client to switch to their melee to avoid civilizing them.
 	// Not a pretty way to do it, but setting the active weapon handle manually
 	// causes the weapon model to not render.
-	// Note(AndrewB): This doesn't work for bots.
+	// Note: This doesn't work for bots.
 	ClientCommand( nClientIdx, "slot3" );
 
 	for ( int nSlotIdx = TFWeaponSlot_Primary; nSlotIdx < TFWeaponSlot_PDA; nSlotIdx++ )
