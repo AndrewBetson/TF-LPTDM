@@ -12,26 +12,36 @@
 
 	"LPTDM_MV_CannotCallVote_AlreadyMedieval"
 	{
-		"en"	"{green}[Medieval Votes]{default} Can't initiate a Medieval vote while Medieval Mode is already active."
+		"en"	"{green}[Medieval Votes]{default} Can't initiate a Medieval vote on a Medieval map."
 	}
 
-	"LPTDM_MV_Forced"
+	"LPTDM_MV_Forced_Enable"
 	{
 		"en"	"{green}[Medieval Votes]{default} The server has been forced into Medieval Mode!"
 	}
 
-	"LPTDM_MV_Force_AlreadyMedieval"
+	"LPTDM_MV_Forced_Disable"
 	{
-		"en"	"{green}[Medieval Votes]{default} Can't force Medieval Mode while it's already active."
+		"en"	"{green}[Medieval Votes]{default} The server has been forced out of Medieval Mode! (resupply to get your weapons back!)"
 	}
 
-	"LPTDM_MV_VoteTitle"
+	"LPTDM_MV_VoteTitle_Enable"
 	{
-		"en"	"Enable Medieval Mode for the duration of this map?"
+		"en"	"Enable Medieval Mode?"
 	}
 
-	"LPTDM_MV_VoteSucceeded"
+	"LPTDM_MV_VoteTitle_Disable"
+	{
+		"en"	"Disable Medieval Mode?"
+	}
+
+	"LPTDM_MV_VoteSucceeded_Enable"
 	{
 		"en"	"Enabling Medieval Mode..."
+	}
+
+	"LPTDM_MV_VoteSucceeded_Disable"
+	{
+		"en"	"Disabling Medieval Mode...\n(Resupply to get your weapons back!)"
 	}
 }

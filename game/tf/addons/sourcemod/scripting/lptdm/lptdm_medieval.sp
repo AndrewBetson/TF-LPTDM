@@ -40,9 +40,7 @@ void OnPluginStart_Medieval()
 	RegAdminCmd( "sm_forcemedieval", Cmd_ForceMedieval, ADMFLAG_SLAY, "Force the server into Medieval Mode." );
 
 	sv_lptdm_medieval_healthkit_enable = CreateConVar( "sv_lptdm_medieval_healthkit_enable", "1", "Whether players should drop small healthkits when they are killed or not.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-
 	sv_lptdm_medieval_vote_cooldown = CreateConVar( "sv_lptdm_medieval_vote_cooldown", "240", "Time, in seconds, after a failed Medieval Vote before another can be started.", FCVAR_NOTIFY, true, 0.0 );
-	sv_lptdm_medieval_vote_percentage = CreateConVar( "sv_lptdm_medieval_vote_percentage", "0.60", "Percent of players that need to vote yes to enable Medieval Mode.", 0, true, 0.01, true, 1.0 );
 
 	HookConVarChange( sv_lptdm_medieval_vote_cooldown, ConVar_OnCooldownChanged );
 	HookEvent( "post_inventory_application", Event_PostInventoryApplication_Medieval, EventHookMode_Post );
@@ -79,7 +77,7 @@ Action Cmd_MedievalVote( int nClientIdx, int nNumArgs )
 		return Plugin_Handled;
 	}
 
-	if ( g_bIsMedievalModeActive )
+	if ( g_bIsMapAlreadyMedieval )
 	{
 		// TODO(AndrewB): Find a way to display this as a vote fail popup.
 		CPrintToChat( nClientIdx, "%t", "LPTDM_MV_CannotCallVote_AlreadyMedieval" );
@@ -103,8 +101,7 @@ Action Cmd_MedievalVote( int nClientIdx, int nNumArgs )
 
 	NativeVote hMedievalVote = new NativeVote( NVCallback_VoteMenu, NativeVotesType_Custom_YesNo );
 	hMedievalVote.Initiator = nClientIdx;
-	hMedievalVote.SetTitle( "%t", "LPTDM_MV_VoteTitle" );
-	hMedievalVote.VoteResultCallback = NVCallback_VoteFinished;
+	hMedievalVote.SetTitle( "%t", g_bIsMedievalModeActive ? "LPTDM_MV_VoteTitle_Disable" : "LPTDM_MV_VoteTitle_Enable" );
 
 	hMedievalVote.DisplayVoteToAll( 20, VOTEFLAG_NO_REVOTES );
 
@@ -113,14 +110,15 @@ Action Cmd_MedievalVote( int nClientIdx, int nNumArgs )
 
 Action Cmd_ForceMedieval( int nClientIdx, int nNumArgs )
 {
-	if ( g_bIsMedievalModeActive || g_bIsMapAlreadyMedieval )
+	CPrintToChatAll( "%t", g_bIsMedievalModeActive ? "LPTDM_MV_Forced_Disable" : "LPTDM_MV_Forced_Enable" );
+	if ( g_bIsMedievalModeActive )
 	{
-		CPrintToChat( nClientIdx, "%t", "LPTDM_MV_Force_AlreadyMedieval" );
-		return Plugin_Handled;
+		g_bIsMedievalModeActive = false;
 	}
-
-	EnableMedievalMode();
-	CPrintToChatAll( "%t", "LPTDM_MV_Forced" );
+	else
+	{
+		EnableMedievalMode();
+	}
 
 	return Plugin_Handled;
 }
@@ -193,7 +191,7 @@ void EnableMedievalMode()
 	// Medieval Mode was enabled and occupy the same slot as a weapon
 	// they have equipped that *is* compatible with Medieval Mode.
 	// (gunboats/lunchbox -> shotgun, mad milk/bonk/cola/guillotine -> pistol, bootlegger/booties -> grenade launcher, etc.)
-	// TODO(AndrewB): Only remove Medieval incompatible dropped weapons.
+	// TODO(AndrewB): Only remove Medieval-incompatible dropped weapons.
 
 	while ( ( nEntIdx = FindEntityByClassname( nEntIdx, "tf_dropped_weapon" ) ) != -1 )
 	{
@@ -307,32 +305,26 @@ int NVCallback_VoteMenu( NativeVote hMenu, MenuAction eAction, int nParam1, int 
 		{
 			hMenu.DisplayFail( nParam1 == VoteCancel_NoVotes ? NativeVotesFail_NotEnoughVotes : NativeVotesFail_Generic );
 		}
+		case MenuAction_VoteEnd:
+		{
+			if ( nParam1 == NATIVEVOTES_VOTE_NO )
+			{
+				hMenu.DisplayFail( NativeVotesFail_Loses );
+			}
+			else
+			{
+				hMenu.DisplayPass( "%t", g_bIsMedievalModeActive ? "LPTDM_MV_VoteSucceeded_Disable" : "LPTDM_MV_VoteSucceeded_Enable" );
+				if ( g_bIsMedievalModeActive )
+				{
+					g_bIsMedievalModeActive = false;
+				}
+				else
+				{
+					EnableMedievalMode();
+				}
+			}
+		}
 	}
 
 	return 0;
-}
-
-void NVCallback_VoteFinished(
-	NativeVote hMenu,
-	int nNumVotes,
-	int nNumClients,
-	const int[] nClientIndices,
-	const int[] nClientVotes,
-	int nNumItems,
-	const int[] nItemIndices,
-	const int[] nItemVotes
-)
-{
-	int nWinningVotes = nItemVotes[ 0 ];
-	int nRequiredVotes = RoundToFloor( view_as< float >( nNumVotes ) * sv_lptdm_medieval_vote_percentage.FloatValue );
-
-	if ( nWinningVotes < nRequiredVotes )
-	{
-		hMenu.DisplayFail( NativeVotesFail_NotEnoughVotes );
-
-		return;
-	}
-
-	hMenu.DisplayPass( "%t", "LPTDM_MV_VoteSucceeded" );
-	EnableMedievalMode();
 }
