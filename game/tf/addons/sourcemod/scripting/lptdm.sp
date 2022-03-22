@@ -36,7 +36,7 @@ public Plugin myinfo =
 	name		= "LazyPurple Team Deathmatch Server Stuff",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Stuff for the LazyPurple Team Deathmatch Server.",
-	version		= "1.1.0",
+	version		= "1.2.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 

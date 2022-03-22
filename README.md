@@ -2,7 +2,7 @@ A modularized Team Fortress 2 SourceMod plugin developed for the LazyPurple Team
 
 # Modules
 ### Medieval
-Implements a custom recreation of Medieval Mode, and a voting system to enable it on any map.
+Implements a custom recreation of Medieval Mode, and a voting system to toggle it on any map.
 ### Self Crits
 Allows players to disable their ability to get random crits.
 
@@ -11,11 +11,10 @@ LPTDM exposes the following console elements:
 | Name | Description | Default | Notes |
 |------|------|------|------|
 | `sm_selfcrits` | Disable the calling players ability to get random crits. | N/A | None |
-| `sm_medievalvote` | Initiate a vote to enable Medieval Mode. | N/A | None |
-| `sm_forcemedieval` | Force the server into Medieval Mode. | N/A | Requires >= ADMFLAG_SLAY command privilege |
+| `sm_medievalvote` | Initiate a vote to toggle Medieval Mode. | N/A | None |
+| `sm_forcemedieval` | Forcefully toggle Medieval Mode. | N/A | Requires >= ADMFLAG_SLAY command privilege |
 | `sv_lptdm_medieval_healthkit_enable` | Whether players should drop small healthkits upon death or not. | 1 | None |
 | `sv_lptdm_medieval_vote_cooldown` | Time, in seconds, after a failed Medieval vote before another can be started. | 240 | None |
-| `sv_lptdm_medieval_vote_percentage` | Percentage of players in the server that need to vote yes for Medieval Mode to be enabled. | 0.60 | None |
 
 # Dependencies
 [nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)  
