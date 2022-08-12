@@ -15,19 +15,57 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <sourcemod>
+#include <sdktools>
+#include <clientprefs>
+
+#include <tf2>
+#include <tf2_stocks>
+
+#include <morecolors>
+
+#pragma semicolon 1
+#pragma newdecls required
+
+public Plugin myinfo =
+{
+	name		= "LPTDM - Crit Toggle",
+	author		= "Andrew \"andrewb\" Betson",
+	description	= "Per-player random crit toggling for LazyPurple's TDM Server.",
+	version		= "1.2.0",
+	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
+};
+
 bool	g_bSelfCritsDisabled[ MAXPLAYERS + 1 ] = { false, ... };
 Handle	g_hCookie_PlayerSelfCritPref;
 
-void OnPluginStart_SelfCrits()
+public void OnPluginStart()
 {
+	if ( GetEngineVersion() != Engine_TF2 )
+	{
+		SetFailState( "The LPTDM plugins are only compatible with Team Fortress 2." );
+	}
+
+	LoadTranslations( "lptdm.phrases" );
+
 	RegConsoleCmd( "sm_selfcrits", Cmd_SelfCrits, "Toggle random crits on the calling player." );
 	RegConsoleCmd( "sm_togglecrits", Cmd_SelfCrits, "Toggle random crits on the calling player." );
 
 	g_hCookie_PlayerSelfCritPref = RegClientCookie( "playerselfcritpref", "Player preference for LPTDM_SelfCrits", CookieAccess_Public );
 	SetCookiePrefabMenu( g_hCookie_PlayerSelfCritPref, CookieMenu_OnOff_Int, "Player Self Crit Preference", CookieHandler_PlayerSelfCritPref );
+
+	for ( int i = 1; i <= MaxClients; i++ )
+	{
+		if ( !AreClientCookiesCached( i ) )
+		{
+			continue;
+		}
+
+		OnClientCookiesCached( i );
+	}
 }
 
-void OnClientCookiesCached_SelfCrits( int nClientIdx )
+public void OnClientCookiesCached( int nClientIdx )
 {
 	char szCookieValue[ 8 ];
 	GetClientCookie( nClientIdx, g_hCookie_PlayerSelfCritPref, szCookieValue, sizeof( szCookieValue ) );

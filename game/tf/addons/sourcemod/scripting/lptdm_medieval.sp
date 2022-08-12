@@ -21,6 +21,31 @@
  * NativeVotes	(C)2011-2016 Ross Bemrose (Powerlord). (nativevotes mapchooser)
  */
 
+#include <sourcemod>
+#include <sdktools>
+#include <clientprefs>
+
+#include <tf2>
+#include <tf2_stocks>
+
+#include <nativevotes>
+#include <tf2attributes> // needed for checking if a weapon can be used in Medieval Mode
+#include <morecolors>
+
+#pragma semicolon 1
+#pragma newdecls required
+
+bool g_bIsPreGame;
+
+public Plugin myinfo =
+{
+	name		= "LPTDM - Medieval",
+	author		= "Andrew \"andrewb\" Betson",
+	description	= "Custom reimplementation of Medieval Mode with a voting system for toggling it for LazyPurple's TDM Server.",
+	version		= "1.2.0",
+	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
+};
+
 ConVar	sv_lptdm_medieval_healthkit_enable;
 
 ConVar	sv_lptdm_medieval_vote_cooldown;
@@ -33,8 +58,16 @@ int		g_nLastVoteTime;
 
 Handle	g_hSDKCall_TFPlayer_DropHealthPack;
 
-void OnPluginStart_Medieval()
+public void OnPluginStart()
 {
+	if ( GetEngineVersion() != Engine_TF2 )
+	{
+		SetFailState( "The LPTDM plugins are only compatible with Team Fortress 2." );
+	}
+
+	LoadTranslations( "lptdm.phrases" );
+	AutoExecConfig( true, "lptdm_medieval" );
+
 	RegConsoleCmd( "sm_medievalvote", Cmd_MedievalVote, "Initiate a vote to enable Medieval Mode." );
 	RegAdminCmd( "sm_forcemedieval", Cmd_ForceMedieval, ADMFLAG_SLAY, "Force the server into Medieval Mode." );
 
@@ -42,7 +75,7 @@ void OnPluginStart_Medieval()
 	sv_lptdm_medieval_vote_cooldown = CreateConVar( "sv_lptdm_medieval_vote_cooldown", "240", "Time, in seconds, after a failed Medieval Vote before another can be started.", FCVAR_NOTIFY, true, 0.0 );
 
 	HookConVarChange( sv_lptdm_medieval_vote_cooldown, ConVar_OnCooldownChanged );
-	HookEvent( "post_inventory_application", Event_PostInventoryApplication_Medieval, EventHookMode_Post );
+	HookEvent( "post_inventory_application", Event_PostInventoryApplication, EventHookMode_Post );
 	HookEvent( "player_death", Event_PlayerDeath, EventHookMode_Post );
 
 	// SDKCall for CTFPlayer::DropHealthPack()
@@ -60,7 +93,7 @@ void OnPluginStart_Medieval()
 	g_hSDKCall_TFPlayer_DropHealthPack = EndPrepSDKCall();
 }
 
-void OnMapStart_Medieval()
+public void OnMapStart()
 {
 	// Don't allow Medieval votes to be called if this is already a Medieval map.
 	g_bIsMapAlreadyMedieval = ( FindEntityByClassname( -1, "tf_logic_medieval" ) ) != -1;
@@ -138,14 +171,14 @@ void EnableMedievalMode()
 	g_bIsMedievalModeActive = true;
 
 	// Remove Medieval incompatible weapons from living players' loadouts.
-	for ( int nClientIdx = 1; nClientIdx <= MaxClients; nClientIdx++ )
+	for ( int i = 1; i <= MaxClients; i++ )
 	{
-		if ( !IsClientInGame( nClientIdx ) || !IsPlayerAlive( nClientIdx ) )
+		if ( !IsClientInGame( i ) || !IsPlayerAlive( i ) )
 		{
 			continue;
 		}
 
-		RemoveNonMedievalWeaponsFromClient( nClientIdx );
+		RemoveNonMedievalWeaponsFromClient( i );
 	}
 
 	// Remove Medieval incompatible projectiles from the world.
@@ -251,7 +284,7 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 	}
 }
 
-Action Event_PostInventoryApplication_Medieval( Handle hEvent, char[] szName, bool bDontBroadcast )
+Action Event_PostInventoryApplication( Handle hEvent, char[] szName, bool bDontBroadcast )
 {
 	if ( !g_bIsMedievalModeActive || g_bIsMapAlreadyMedieval )
 	{
@@ -290,6 +323,16 @@ Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 void Frame_PostInventoryApplication( int nClientIdx )
 {
 	RemoveNonMedievalWeaponsFromClient( nClientIdx );
+}
+
+public void TF2_OnWaitingForPlayersStart()
+{
+	g_bIsPreGame = true;
+}
+
+public void TF2_OnWaitingForPlayersEnd()
+{
+	g_bIsPreGame = false;
 }
 
 int NVCallback_VoteMenu( NativeVote hMenu, MenuAction eAction, int nParam1, int nParam2 )
