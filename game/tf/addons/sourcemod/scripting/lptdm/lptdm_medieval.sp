@@ -24,7 +24,6 @@
 ConVar	sv_lptdm_medieval_healthkit_enable;
 
 ConVar	sv_lptdm_medieval_vote_cooldown;
-ConVar	sv_lptdm_medieval_vote_percentage;
 
 bool	g_bCanCallMedievalVote;
 bool	g_bIsMedievalModeActive;
