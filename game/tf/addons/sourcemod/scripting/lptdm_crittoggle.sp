@@ -76,7 +76,7 @@ public void OnClientCookiesCached( int nClientIdx )
 Action Cmd_SelfCrits( int nClientIdx, int nNumArgs )
 {
 	g_bSelfCritsDisabled[ nClientIdx ] = !g_bSelfCritsDisabled[ nClientIdx ];
-	CPrintToChat( nClientIdx, "%t", g_bSelfCritsDisabled[ nClientIdx ] ? "LPTDM_SC_Disabled" : "LPTDM_SC_Enabled" );
+	CPrintToChat( nClientIdx, "%t", g_bSelfCritsDisabled[ nClientIdx ] ? "LPTDM_CT_Disabled" : "LPTDM_CT_Enabled" );
 
 	char szNewCookieValue[ 8 ];
 	IntToString( view_as< int >( g_bSelfCritsDisabled[ nClientIdx ] ), szNewCookieValue, sizeof( szNewCookieValue ) );

@@ -1,13 +1,13 @@
 "Phrases"
 {
-	"LPTDM_SC_Enabled"
+	"LPTDM_CT_Enabled"
 	{
-		"en"	"{green}[Self Crits]{default} You can get random crits again!"
+		"en"	"{green}[Crit Toggle]{default} You can randomly crit again."
 	}
 
-	"LPTDM_SC_Disabled"
+	"LPTDM_CT_Disabled"
 	{
-		"en"	"{green}[Self Crits]{default} You can no longer get random crits."
+		"en"	"{green}[Crit Toggle]{default} You can no longer randomly crit."
 	}
 
 	"LPTDM_MV_CannotCallVote_AlreadyMedieval"
