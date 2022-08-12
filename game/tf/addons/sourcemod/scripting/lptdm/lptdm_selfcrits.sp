@@ -20,7 +20,8 @@ Handle	g_hCookie_PlayerSelfCritPref;
 
 void OnPluginStart_SelfCrits()
 {
-	RegConsoleCmd( "sm_selfcrits", Cmd_SelfCrits, "Disable your ability to get random crits." );
+	RegConsoleCmd( "sm_selfcrits", Cmd_SelfCrits, "Toggle random crits on the calling player." );
+	RegConsoleCmd( "sm_togglecrits", Cmd_SelfCrits, "Toggle random crits on the calling player." );
 
 	g_hCookie_PlayerSelfCritPref = RegClientCookie( "playerselfcritpref", "Player preference for LPTDM_SelfCrits", CookieAccess_Public );
 	SetCookiePrefabMenu( g_hCookie_PlayerSelfCritPref, CookieMenu_OnOff_Int, "Player Self Crit Preference", CookieHandler_PlayerSelfCritPref );
