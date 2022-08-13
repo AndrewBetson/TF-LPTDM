@@ -1,20 +1,25 @@
-A modularized Team Fortress 2 SourceMod plugin developed for the LazyPurple Team Deathmatch Server.
+A set of SourceMod plugins developed for [LazyPurple's TDM Server](https://lazypurple.com/connect-to/192.223.26.238%3A27025).
 
 # Modules
 ### Medieval
 Implements a custom recreation of Medieval Mode, and a voting system to toggle it on any map.
-### Self Crits
-Allows players to disable their ability to get random crits.
+### Crit Toggle
+Allows players to toggle their ability to get random crits.
+### Spawn Protection
+Configurable spawn protection.
 
 # Console Elements
 LPTDM exposes the following console elements:
 | Name | Description | Default | Notes |
 |------|------|------|------|
-| `sm_selfcrits` | Disable the calling players ability to get random crits. | N/A | None |
+| `sm_selfcrits`/`sm_togglecrits` | Toggle the calling players ability to get random crits. | N/A | None |
 | `sm_medievalvote` | Initiate a vote to toggle Medieval Mode. | N/A | None |
 | `sm_forcemedieval` | Forcefully toggle Medieval Mode. | N/A | Requires >= ADMFLAG_SLAY command privilege |
 | `sv_lptdm_medieval_healthkit_enable` | Whether players should drop small healthkits upon death or not. | 1 | None |
 | `sv_lptdm_medieval_vote_cooldown` | Time, in seconds, after a failed Medieval vote before another can be started. | 240 | None |
+| `sv_lptdm_spawnprotection_duration` | Number of seconds players are protected after spawning. | 5.0 | None |
+| `sv_lptdm_spawnprotection_disable_during_pregame` | Disable spawn protection during pre-game warmup. | 1 | None |
+| `sv_lptdm_spawnprotection_cancel_on_attack` | Cancel spawn protection when a player presses their primary attack key. | 0 | None |
 
 # Dependencies
 [nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)  
@@ -26,8 +31,8 @@ LPTDM exposes the following console elements:
 - Enabling *actual* Medieval Mode requires a mapchange, so a successful Medieval vote actually enables a sort of faux-Medieval Mode instead, which I've tried to make as functionally similar to real Medieval Mode as possible.
 - Currently, *all* dropped weapons get removed from the world when a Medieval vote is passed. In the future, I would like for only *Medieval incompatible* dropped weapons to be removed.
 - As a result of the first note, `tf_medieval_autorp` and `tf_medieval_thirdperson` do not function.
-### Self Crits
-- Due to a quirk in how random crits are calculated, attacks that otherwise would have been random crits will still play crit sounds/particles/anims on the clients of players that have self crits disabled.
+### Crit Toggle
+- Due to a quirk in how random crits are calculated, attacks that otherwise would have been random crits will still play crit sounds/particles/anims on the clients of players that have them disabled.
 
 # TODO
 ### Medieval
