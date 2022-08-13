@@ -42,7 +42,7 @@ public Plugin myinfo =
 	name		= "LPTDM - Medieval",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Custom reimplementation of Medieval Mode with a voting system for toggling it for LazyPurple's TDM Server.",
-	version		= "1.2.1",
+	version		= "1.2.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 
@@ -239,7 +239,7 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 	// Note: This doesn't work for bots.
 	ClientCommand( nClientIdx, "slot3" );
 
-	for ( int nSlotIdx = TFWeaponSlot_Primary; nSlotIdx <= TFWeaponSlot_PDA; nSlotIdx++ )
+	for ( int nSlotIdx = TFWeaponSlot_Primary; nSlotIdx < TFWeaponSlot_PDA; nSlotIdx++ )
 	{
 		// All melee weapons are allowed in Medieval Mode.
 		if ( nSlotIdx == TFWeaponSlot_Melee )
@@ -292,7 +292,9 @@ Action Event_PostInventoryApplication( Handle hEvent, char[] szName, bool bDontB
 	}
 
 	int nClientIdx = GetClientOfUserId( GetEventInt( hEvent, "userid" ) );
-	RemoveNonMedievalWeaponsFromClient( nClientIdx );
+
+	// HACK(AndrewB): For some reason RemoveNonMedievalWeaponsFromClient() fails to remove the sapper from Spies unless we wait a frame first.
+	RequestFrame( Frame_PostInventoryApplication, nClientIdx );
 
 	return Plugin_Handled;
 }
@@ -316,6 +318,11 @@ Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 	SDKCall( g_hSDKCall_TFPlayer_DropHealthPack, nVictim, 0, false );
 
 	return Plugin_Handled;
+}
+
+void Frame_PostInventoryApplication( int nClientIdx )
+{
+	RemoveNonMedievalWeaponsFromClient( nClientIdx );
 }
 
 public void TF2_OnWaitingForPlayersStart()
