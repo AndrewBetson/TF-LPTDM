@@ -102,6 +102,16 @@ public void TF2_OnConditionRemoved( int nClientIdx, TFCond eCondition )
 	}
 }
 
+public void TF2_OnWaitingForPlayersStart()
+{
+	g_bIsPreGame = true;
+}
+
+public void TF2_OnWaitingForPlayersEnd()
+{
+	g_bIsPreGame = false;
+}
+
 public Action OnPlayerRunCmd(
 	int nClientIdx, int &nButtonMask, int &nImpulse,
 	float vDesiredVelocity[ 3 ], float vDesiredViewAngles[ 3 ],
