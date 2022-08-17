@@ -30,12 +30,14 @@ public Plugin myinfo =
 	name		= "LPTDM - Spawn Protection",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Configurable spawn protection plugin for LazyPurple's TDM Server.",
-	version		= "1.0.0",
+	version		= "1.1.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 
 bool	g_bIsPreGame;
+
 bool	g_bIsClientProtected[ MAXPLAYERS + 1 ] = { false, ... };
+bool	g_bShouldClientReceiveProtection[ MAXPLAYERS + 1 ] = { false, ... };
 
 ConVar	sv_lptdm_spawnprotection_cancel_on_attack;
 ConVar	sv_lptdm_spawnprotection_disable_during_pregame;
@@ -78,6 +80,7 @@ public void OnPluginStart()
 	);
 
 	HookEvent( "player_spawn", Event_PlayerSpawn, EventHookMode_Post );
+	HookEvent( "player_death", Event_PlayerDeath, EventHookMode_Post );
 }
 
 Action Event_PlayerSpawn( Handle hEvent, char[] szName, bool bDontBroadcast )
@@ -88,10 +91,54 @@ Action Event_PlayerSpawn( Handle hEvent, char[] szName, bool bDontBroadcast )
 	}
 
 	int nClientIdx = GetClientOfUserId( GetEventInt( hEvent, "userid" ) );
+	if ( !g_bShouldClientReceiveProtection[ nClientIdx ] )
+	{
+		return Plugin_Continue;
+	}
+
 	TF2_AddCondition( nClientIdx, TFCond_Ubercharged, sv_lptdm_spawnprotection_duration.FloatValue );
 	g_bIsClientProtected[ nClientIdx ] = true;
+	g_bShouldClientReceiveProtection[ nClientIdx ] = false;
 
 	return Plugin_Continue;
+}
+
+Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
+{
+	if ( g_bIsPreGame && sv_lptdm_spawnprotection_disable_during_pregame.BoolValue )
+	{
+		return Plugin_Continue;
+	}
+
+	int nClientIdx = GetClientOfUserId( GetEventInt( hEvent, "userid" ) );
+	g_bShouldClientReceiveProtection[ nClientIdx ] = true;
+
+	return Plugin_Continue;
+}
+
+public void OnMapEnd()
+{
+	for ( int i = 0; i < MAXPLAYERS + 1; i++ )
+	{
+		g_bIsClientProtected[ i ] = false;
+		g_bShouldClientReceiveProtection[ i ] = false;
+	}
+}
+
+public void OnClientConnected( int nClientIdx )
+{
+	if ( g_bIsPreGame && sv_lptdm_spawnprotection_disable_during_pregame.BoolValue )
+	{
+		return;
+	}
+
+	g_bShouldClientReceiveProtection[ nClientIdx ] = true;
+}
+
+public void OnClientDisconnect( int nClientIdx )
+{
+	g_bIsClientProtected[ nClientIdx ] = false;
+	g_bShouldClientReceiveProtection[ nClientIdx ] = false;
 }
 
 public void TF2_OnConditionRemoved( int nClientIdx, TFCond eCondition )
