@@ -21,6 +21,7 @@
 
 #include <tf2>
 #include <tf2_stocks>
+#include <tf2utils>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -30,7 +31,7 @@ public Plugin myinfo =
 	name		= "LPTDM - Spawn Protection",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Configurable spawn protection plugin for LazyPurple's TDM Server.",
-	version		= "1.1.0",
+	version		= "1.2.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 
@@ -38,6 +39,7 @@ bool	g_bIsPreGame;
 
 bool	g_bIsClientProtected[ MAXPLAYERS + 1 ] = { false, ... };
 bool	g_bShouldClientReceiveProtection[ MAXPLAYERS + 1 ] = { false, ... };
+bool	g_bHasLeftSpawnroom[ MAXPLAYERS + 1 ] = { false, ... };
 
 ConVar	sv_lptdm_spawnprotection_cancel_on_attack;
 ConVar	sv_lptdm_spawnprotection_disable_during_pregame;
@@ -81,6 +83,13 @@ public void OnPluginStart()
 
 	HookEvent( "player_spawn", Event_PlayerSpawn, EventHookMode_Post );
 	HookEvent( "player_death", Event_PlayerDeath, EventHookMode_Post );
+
+}
+
+void Protection_Apply(int nClientIdx)
+{
+	TF2_AddCondition( nClientIdx, TFCond_Ubercharged, sv_lptdm_spawnprotection_duration.FloatValue );
+	g_bIsClientProtected[ nClientIdx ] = true;
 }
 
 Action Event_PlayerSpawn( Handle hEvent, char[] szName, bool bDontBroadcast )
@@ -96,8 +105,7 @@ Action Event_PlayerSpawn( Handle hEvent, char[] szName, bool bDontBroadcast )
 		return Plugin_Continue;
 	}
 
-	TF2_AddCondition( nClientIdx, TFCond_Ubercharged, sv_lptdm_spawnprotection_duration.FloatValue );
-	g_bIsClientProtected[ nClientIdx ] = true;
+	Protection_Apply(nClientIdx);
 	g_bShouldClientReceiveProtection[ nClientIdx ] = false;
 
 	return Plugin_Continue;
@@ -112,7 +120,34 @@ Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 
 	int nClientIdx = GetClientOfUserId( GetEventInt( hEvent, "userid" ) );
 	g_bShouldClientReceiveProtection[ nClientIdx ] = true;
+	g_bHasLeftSpawnroom[ nClientIdx ] = false;
 
+	return Plugin_Continue;
+}
+
+public void OnMapStart()
+{
+	CreateTimer( 1.0, Timer_ExtendProtection, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
+}
+
+Action Timer_ExtendProtection(Handle hTimer)
+{
+	for ( int nClientIdx = 1; nClientIdx <= MaxClients; nClientIdx++ )
+	{
+		if ( IsClientInGame( nClientIdx ) && g_bIsClientProtected[ nClientIdx ] && !g_bHasLeftSpawnroom[ nClientIdx ] )
+		{
+			float vOrigin[3];
+			GetClientAbsOrigin( nClientIdx, vOrigin );
+			if ( TF2Util_IsPointInRespawnRoom( vOrigin, nClientIdx, true ) )
+			{
+				Protection_Apply( nClientIdx );
+			}
+			else
+			{
+				g_bHasLeftSpawnroom[ nClientIdx ] = true;
+			}
+		}
+	}
 	return Plugin_Continue;
 }
 
@@ -122,6 +157,7 @@ public void OnMapEnd()
 	{
 		g_bIsClientProtected[ i ] = false;
 		g_bShouldClientReceiveProtection[ i ] = false;
+		g_bHasLeftSpawnroom[ i ] = false;
 	}
 }
 
@@ -139,6 +175,7 @@ public void OnClientDisconnect( int nClientIdx )
 {
 	g_bIsClientProtected[ nClientIdx ] = false;
 	g_bShouldClientReceiveProtection[ nClientIdx ] = false;
+	g_bHasLeftSpawnroom[ nClientIdx ] = false;
 }
 
 public void TF2_OnConditionRemoved( int nClientIdx, TFCond eCondition )
