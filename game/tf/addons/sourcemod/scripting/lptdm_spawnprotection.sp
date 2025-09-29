@@ -31,7 +31,7 @@ public Plugin myinfo =
 	name		= "LPTDM - Spawn Protection",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Configurable spawn protection plugin for LazyPurple's TDM Server.",
-	version		= "1.3.0",
+	version		= "1.3.1",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 
@@ -201,7 +201,9 @@ static int g_nWeaponsWithSecondaryFire[] = {
 	21, 40, 215, 741, 1178, 30474,				// Flamethrowers
 	15, 41, 298, 312, 424, 811,					// Miniguns
 	42, 159, 311, 433, 863, 1190,				// Heavy lunchboxes,
-	5, 43, 239, 310, 331, 426, 587, 656, 1100	// Fists
+	5, 43, 239, 310, 331, 426, 587, 656, 1100,	// Fists
+	140, 528, 30668,							// Wrangler, Short Circuit, Giger Counter
+	998											// Vaccinator
 };
 
 public Action OnPlayerRunCmd(
