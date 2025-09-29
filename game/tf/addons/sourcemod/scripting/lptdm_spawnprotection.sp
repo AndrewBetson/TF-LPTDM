@@ -31,7 +31,7 @@ public Plugin myinfo =
 	name		= "LPTDM - Spawn Protection",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Configurable spawn protection plugin for LazyPurple's TDM Server.",
-	version		= "1.2.0",
+	version		= "1.3.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 
@@ -52,7 +52,6 @@ public void OnPluginStart()
 		SetFailState( "The LPTDM plugins are only compatible with Team Fortress 2." );
 	}
 
-	LoadTranslations( "lptdm.phrases" );
 	AutoExecConfig( true, "lptdm_spawnprotection" );
 
 	sv_lptdm_spawnprotection_cancel_on_attack = CreateConVar(
@@ -196,6 +195,15 @@ public void TF2_OnWaitingForPlayersEnd()
 	g_bIsPreGame = false;
 }
 
+static int g_nWeaponsWithSecondaryFire[] = {
+	44, 220, 648, 812,							// Sandman, Shortstop, Wrap Assassin, Guillotine
+	441,										// Cow Mangler
+	21, 40, 215, 741, 1178, 30474,				// Flamethrowers
+	15, 41, 298, 312, 424, 811,					// Miniguns
+	42, 159, 311, 433, 863, 1190,				// Heavy lunchboxes,
+	5, 43, 239, 310, 331, 426, 587, 656, 1100	// Fists
+};
+
 public Action OnPlayerRunCmd(
 	int nClientIdx, int &nButtonMask, int &nImpulse,
 	float vDesiredVelocity[ 3 ], float vDesiredViewAngles[ 3 ],
@@ -209,10 +217,33 @@ public Action OnPlayerRunCmd(
 		return Plugin_Continue;
 	}
 
-	bool bClientAttacked = view_as< bool >( nButtonMask & IN_ATTACK );
-	if ( bClientAttacked )
+	if ( view_as< bool >( nButtonMask & IN_ATTACK ) )
 	{
 		TF2_RemoveCondition( nClientIdx, TFCond_Ubercharged );
+		return Plugin_Continue;
+	}
+
+	if ( view_as< bool >( nButtonMask & IN_ATTACK2 ) )
+	{
+		if ( TF2_GetPlayerClass( nClientIdx ) == TFClass_DemoMan )
+		{
+			if ( GetEntProp( nClientIdx, Prop_Send, "m_bShieldEquipped" ) == 1 )
+			{
+				TF2_RemoveCondition( nClientIdx, TFCond_Ubercharged );
+				return Plugin_Continue;
+			}
+		}
+
+		int nCurrentWeapon = GetEntPropEnt( nClientIdx, Prop_Send, "m_hActiveWeapon" );
+		int nWeaponItemDefinitionIdx = GetEntProp( nCurrentWeapon, Prop_Send, "m_iItemDefinitionIndex" );
+		for ( int i = 0; i < sizeof( g_nWeaponsWithSecondaryFire ); i++ )
+		{
+			if ( g_nWeaponsWithSecondaryFire[ i ] == nWeaponItemDefinitionIdx )
+			{
+				TF2_RemoveCondition( nClientIdx, TFCond_Ubercharged );
+				return Plugin_Continue;
+			}
+		}
 	}
 
 	return Plugin_Continue;
