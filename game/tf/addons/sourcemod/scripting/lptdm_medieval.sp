@@ -12,9 +12,10 @@
 #include <tf2>
 #include <tf2_stocks>
 
+#include <morecolors>
 #include <nativevotes>
 #include <tf2attributes>
-#include <morecolors>
+#include <tf_econ_data>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -227,10 +228,36 @@ void EnableMedievalMode()
 	// Medieval Mode was enabled and occupy the same slot as a weapon
 	// they have equipped that *is* compatible with Medieval Mode.
 	// (gunboats/lunchbox -> shotgun, mad milk/bonk/cola/guillotine -> pistol, bootlegger/booties -> grenade launcher, etc.)
-	// TODO(AndrewB): Only remove Medieval-incompatible dropped weapons.
 
 	while ( ( nEntIdx = FindEntityByClassname( nEntIdx, "tf_dropped_weapon" ) ) != -1 )
 	{
+		int nWeaponItemDefinitionIdx = GetEntProp( nEntIdx, Prop_Send, "m_iItemDefinitionIndex" );
+
+		int nWeaponLoadoutSlot = TF2Econ_GetItemDefaultLoadoutSlot( nWeaponItemDefinitionIdx );
+		if ( nWeaponLoadoutSlot == TFWeaponSlot_Melee )
+		{
+			continue;
+		}
+
+		int nAttributes[ 16 ];
+		float flValues[ 16 ];
+		int nNumAttributes = TF2Attrib_GetStaticAttribs( nWeaponItemDefinitionIdx, nAttributes, flValues );
+
+		bool bIsWeaponMedievalCompatible = false;
+		for ( int nAttribIdx = 0; nAttribIdx <= nNumAttributes; nAttribIdx++ )
+		{
+			if ( nAttributes[ nAttribIdx ] == 2029 ) // 2029 = "allowed in medieval mode" attrib idx
+			{
+				bIsWeaponMedievalCompatible = true;
+				break;
+			}
+		}
+
+		if ( bIsWeaponMedievalCompatible )
+		{
+			continue;
+		}
+
 		RemoveEntity( nEntIdx );
 	}
 }

@@ -22,8 +22,9 @@ LPTDM exposes the following console elements:
 | `sv_lptdm_spawnprotection_cancel_on_attack` | Cancel spawn protection when a player presses their primary attack key. | 0 | None |
 
 # Dependencies
-[nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)  
-[tf2attributes](https://forums.alliedmods.net/showthread.php?t=210221)  
+[nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)
+[tf2attributes](https://forums.alliedmods.net/showthread.php?t=210221)
+[tf_econ_data](https://github.com/nosoop/SM-TFEconData/releases/latest)
 [morecolors](https://raw.githubusercontent.com/DoctorMcKay/sourcemod-plugins/master/scripting/include/morecolors.inc) *(compilation only)*
 
 # Notes
