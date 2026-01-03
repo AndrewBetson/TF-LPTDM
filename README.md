@@ -25,7 +25,8 @@ LPTDM exposes the following console elements:
 # Dependencies
 [nativevotes-updated](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest/)
 [tf2attributes](https://forums.alliedmods.net/showthread.php?t=210221)
-[tf_econ_data](https://github.com/nosoop/SM-TFEconData/releases/latest)
+[tf2utils](https://github.com/nosoop/SM-TFUtils/releases/latest) *(lptdm_spawnprotection only)*
+[tf_econ_data](https://github.com/nosoop/SM-TFEconData/releases/latest) *(lptdm_medieval only)*
 [morecolors](https://raw.githubusercontent.com/DoctorMcKay/sourcemod-plugins/master/scripting/include/morecolors.inc) *(compilation only)*
 
 # Notes
