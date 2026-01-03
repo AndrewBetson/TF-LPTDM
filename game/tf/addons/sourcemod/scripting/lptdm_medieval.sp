@@ -38,7 +38,7 @@ public Plugin myinfo =
 	name		= "LPTDM - Medieval",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Custom reimplementation of Medieval Mode with a voting system for toggling it for LazyPurple's TDM Server.",
-	version		= "1.2.0",
+	version		= "1.3.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 
