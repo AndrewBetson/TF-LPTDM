@@ -17,6 +17,7 @@ LPTDM exposes the following console elements:
 | `sm_forcemedieval` | Forcefully toggle Medieval Mode. | N/A | Requires >= ADMFLAG_SLAY command privilege |
 | `sv_lptdm_medieval_healthkit_enable` | Whether players should drop small healthkits upon death or not. | 1 | None |
 | `sv_lptdm_medieval_vote_cooldown` | Time, in seconds, after a failed Medieval vote before another can be started. | 240 | None |
+| `sv_lptdm_medieval_vote_duration` | Duration of votes to toggle Medieval mode. | 20 | None |
 | `sv_lptdm_spawnprotection_duration` | Number of seconds players are protected after spawning. | 5.0 | None |
 | `sv_lptdm_spawnprotection_disable_during_pregame` | Disable spawn protection during pre-game warmup. | 1 | None |
 | `sv_lptdm_spawnprotection_cancel_on_attack` | Cancel spawn protection when a player presses their primary attack key. | 0 | None |
