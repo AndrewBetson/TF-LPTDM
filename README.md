@@ -1,4 +1,4 @@
-A set of SourceMod plugins developed for [LazyPurple's TDM Server](https://lazypurple.com/connect-to/192.223.26.238%3A27025).
+A set of SourceMod plugins developed for [LazyPurple's TDM Server](https://lazypurple.com/play?tdm).
 
 # Modules
 ### Medieval
