@@ -139,7 +139,7 @@ Action Cmd_MedievalVote( int nClientIdx, int nNumArgs )
 	hMedievalVote.Initiator = nClientIdx;
 	hMedievalVote.SetTitle( "%t", g_bIsMedievalModeActive ? "LPTDM_MV_VoteTitle_Disable" : "LPTDM_MV_VoteTitle_Enable" );
 
-	hMedievalVote.DisplayVoteToAll( 20, VOTEFLAG_NO_REVOTES );
+	hMedievalVote.DisplayVoteToAll( sv_lptdm_medieval_vote_duration.IntValue, 0 );
 
 	return Plugin_Handled;
 }
