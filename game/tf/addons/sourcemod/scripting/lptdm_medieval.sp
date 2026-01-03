@@ -264,12 +264,6 @@ void EnableMedievalMode()
 
 void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 {
-	// Force the client to switch to their melee to avoid civilizing them.
-	// Not a pretty way to do it, but setting the active weapon handle manually
-	// causes the weapon model to not render.
-	// Note: This doesn't work for bots.
-	ClientCommand( nClientIdx, "slot3" );
-
 	for ( int nSlotIdx = TFWeaponSlot_Primary; nSlotIdx < TFWeaponSlot_PDA; nSlotIdx++ )
 	{
 		// All melee weapons are allowed in Medieval Mode.
@@ -312,6 +306,12 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 			TF2_RemoveWeaponSlot( nClientIdx, nSlotIdx );
 		}
 	}
+
+	// Force the client to switch to their melee to avoid civilizing them.
+	// Not a pretty way to do it, but setting the active weapon handle manually
+	// causes the weapon model to not render.
+	// Note: This doesn't work for bots.
+	ClientCommand( nClientIdx, "slot3" );
 }
 
 Action Event_PostInventoryApplication( Handle hEvent, char[] szName, bool bDontBroadcast )
