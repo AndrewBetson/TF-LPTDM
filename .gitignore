@@ -1,1 +1,14 @@
-/.vscode
+# Ignore everything by default.
+*
+!*/
+
+# SourceMod stuff.
+!*.sp
+!*.txt
+
+# Git stuff.
+!.gitignore
+!*.md
+
+# Misc.
+!/.vscode/extensions.json
