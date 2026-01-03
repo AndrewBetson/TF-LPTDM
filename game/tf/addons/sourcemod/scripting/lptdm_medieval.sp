@@ -1,25 +1,9 @@
-/**
- * Copyright Andrew Betson.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- * Most of the voting portion of this module is ripped directly from the nativevotes mapchooser src,
- * which is itself based on the vanilla mapchooser plugin src.
- *
- * SourceMod	(C)2004-2008 AlliedModders LLC. (original mapchooser)
- * NativeVotes	(C)2011-2016 Ross Bemrose (Powerlord). (nativevotes mapchooser)
- */
+// SPDX-FileCopyrightText: © Andrew Betson
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// ADDITIONAL ATTRIBUTION FOR VOTING CODE:
+// NativeVotes (C)2011-2016 Ross Bemrose (Powerlord). All rights reserved.
+// SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
 
 #include <sourcemod>
 #include <sdktools>
@@ -29,13 +13,23 @@
 #include <tf2_stocks>
 
 #include <nativevotes>
-#include <tf2attributes> // needed for checking if a weapon can be used in Medieval Mode
+#include <tf2attributes>
 #include <morecolors>
 
 #pragma semicolon 1
 #pragma newdecls required
 
-bool g_bIsPreGame;
+ConVar	sv_lptdm_medieval_healthkit_enable;
+ConVar	sv_lptdm_medieval_vote_cooldown;
+
+bool	g_bIsPreGame;
+bool	g_bCanCallMedievalVote;
+bool	g_bIsMedievalModeActive;
+bool	g_bIsMapAlreadyMedieval;
+
+int		g_nLastVoteTime;
+
+Handle	g_hSDKCall_TFPlayer_DropHealthPack;
 
 public Plugin myinfo =
 {
@@ -45,18 +39,6 @@ public Plugin myinfo =
 	version		= "1.2.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
-
-ConVar	sv_lptdm_medieval_healthkit_enable;
-
-ConVar	sv_lptdm_medieval_vote_cooldown;
-
-bool	g_bCanCallMedievalVote;
-bool	g_bIsMedievalModeActive;
-bool	g_bIsMapAlreadyMedieval;
-
-int		g_nLastVoteTime;
-
-Handle	g_hSDKCall_TFPlayer_DropHealthPack;
 
 public void OnPluginStart()
 {
@@ -111,7 +93,6 @@ Action Cmd_MedievalVote( int nClientIdx, int nNumArgs )
 
 	if ( g_bIsMapAlreadyMedieval )
 	{
-		// TODO(AndrewB): Find a way to display this as a vote fail popup.
 		CPrintToChat( nClientIdx, "%t", "LPTDM_MV_CannotCallVote_AlreadyMedieval" );
 		return Plugin_Handled;
 	}
@@ -256,7 +237,6 @@ void RemoveNonMedievalWeaponsFromClient( int nClientIdx )
 		}
 
 		// Don't remove the disguise kit or invis watch.
-		// Yes, those are actually the weapon slot indices for these.
 		if ( TF2_GetPlayerClass( nClientIdx ) == TFClass_Spy && ( nSlotIdx == TFWeaponSlot_Grenade || nSlotIdx == TFWeaponSlot_Building ) )
 		{
 			continue;
