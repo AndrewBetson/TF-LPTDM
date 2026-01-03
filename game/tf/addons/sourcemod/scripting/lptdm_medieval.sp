@@ -21,6 +21,7 @@
 
 ConVar	sv_lptdm_medieval_healthkit_enable;
 ConVar	sv_lptdm_medieval_vote_cooldown;
+ConVar	sv_lptdm_medieval_vote_duration;
 
 bool	g_bIsPreGame;
 bool	g_bCanCallMedievalVote;
@@ -53,10 +54,32 @@ public void OnPluginStart()
 	RegConsoleCmd( "sm_medievalvote", Cmd_MedievalVote, "Initiate a vote to enable Medieval Mode." );
 	RegAdminCmd( "sm_forcemedieval", Cmd_ForceMedieval, ADMFLAG_SLAY, "Force the server into Medieval Mode." );
 
-	sv_lptdm_medieval_healthkit_enable = CreateConVar( "sv_lptdm_medieval_healthkit_enable", "1", "Whether players should drop small healthkits when they are killed or not.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-	sv_lptdm_medieval_vote_cooldown = CreateConVar( "sv_lptdm_medieval_vote_cooldown", "240", "Time, in seconds, after a failed Medieval Vote before another can be started.", FCVAR_NOTIFY, true, 0.0 );
+	sv_lptdm_medieval_healthkit_enable = CreateConVar(
+		"sv_lptdm_medieval_healthkit_enable",
+		"1",
+		"Whether players should drop small healthkits when they are killed or not.",
+		FCVAR_NONE,
+		true, 0.0,
+		true, 1.0
+	);
 
+	sv_lptdm_medieval_vote_cooldown = CreateConVar(
+		"sv_lptdm_medieval_vote_cooldown",
+		"240",
+		"Time, in seconds, after a failed Medieval Vote before another can be started.",
+		FCVAR_NONE,
+		true, 0.0
+	);
 	HookConVarChange( sv_lptdm_medieval_vote_cooldown, ConVar_OnCooldownChanged );
+
+	sv_lptdm_medieval_vote_duration = CreateConVar(
+		"sv_lptdm_medieval_vote_duration",
+		"20",
+		"Duration of votes to toggle Medieval mode.",
+		FCVAR_NONE,
+		true, 1.0
+	);
+
 	HookEvent( "post_inventory_application", Event_PostInventoryApplication, EventHookMode_Post );
 	HookEvent( "player_death", Event_PlayerDeath, EventHookMode_Post );
 
