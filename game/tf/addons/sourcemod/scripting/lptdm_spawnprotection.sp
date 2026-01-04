@@ -1,19 +1,5 @@
-/**
- * Copyright Andrew Betson.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: © Andrew Betson
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include <sourcemod>
 #include <sdktools>
@@ -31,7 +17,7 @@ public Plugin myinfo =
 	name		= "LPTDM - Spawn Protection",
 	author		= "Andrew \"andrewb\" Betson",
 	description	= "Configurable spawn protection plugin for LazyPurple's TDM Server.",
-	version		= "1.3.1",
+	version		= "1.4.0",
 	url			= "https://www.github.com/AndrewBetson/TF-LPTDM"
 };
 
@@ -40,8 +26,10 @@ bool	g_bIsPreGame;
 bool	g_bIsClientProtected[ MAXPLAYERS + 1 ] = { false, ... };
 bool	g_bShouldClientReceiveProtection[ MAXPLAYERS + 1 ] = { false, ... };
 bool	g_bHasLeftSpawnroom[ MAXPLAYERS + 1 ] = { false, ... };
+float	g_nClientProtectionTime[ MAXPLAYERS + 1 ] = { 0.0, ... };
 
 ConVar	sv_lptdm_spawnprotection_cancel_on_attack;
+ConVar	sv_lptdm_spawnprotection_fade_duration;
 ConVar	sv_lptdm_spawnprotection_disable_during_pregame;
 ConVar	sv_lptdm_spawnprotection_duration;
 
@@ -56,11 +44,19 @@ public void OnPluginStart()
 
 	sv_lptdm_spawnprotection_cancel_on_attack = CreateConVar(
 		"sv_lptdm_spawnprotection_cancel_on_attack",
-		"0",
+		"1",
 		"Cancel spawn protection when a player fires their weapon.",
 		FCVAR_NONE,
 		true, 0.0,
 		true, 1.0
+	);
+
+	sv_lptdm_spawnprotection_fade_duration = CreateConVar(
+		"sv_lptdm_spawnprotection_fade_duration",
+		"1.5",
+		"Duration of fading protection state. Effectively adds this many seconds to protection time.",
+		FCVAR_NONE,
+		true, 0.001
 	);
 
 	sv_lptdm_spawnprotection_disable_during_pregame = CreateConVar(
@@ -74,7 +70,7 @@ public void OnPluginStart()
 
 	sv_lptdm_spawnprotection_duration = CreateConVar(
 		"sv_lptdm_spawnprotection_duration",
-		"5.0",
+		"3.5",
 		"How long spawn protection should last.",
 		FCVAR_NONE,
 		true, 0.001
@@ -82,13 +78,14 @@ public void OnPluginStart()
 
 	HookEvent( "player_spawn", Event_PlayerSpawn, EventHookMode_Post );
 	HookEvent( "player_death", Event_PlayerDeath, EventHookMode_Post );
-
 }
 
-void Protection_Apply(int nClientIdx)
+void Protection_Apply( int nClientIdx )
 {
 	TF2_AddCondition( nClientIdx, TFCond_Ubercharged, sv_lptdm_spawnprotection_duration.FloatValue );
 	g_bIsClientProtected[ nClientIdx ] = true;
+	g_bShouldClientReceiveProtection[ nClientIdx ] = false;
+	g_nClientProtectionTime[ nClientIdx ] = GetGameTime();
 }
 
 Action Event_PlayerSpawn( Handle hEvent, char[] szName, bool bDontBroadcast )
@@ -104,8 +101,7 @@ Action Event_PlayerSpawn( Handle hEvent, char[] szName, bool bDontBroadcast )
 		return Plugin_Continue;
 	}
 
-	Protection_Apply(nClientIdx);
-	g_bShouldClientReceiveProtection[ nClientIdx ] = false;
+	Protection_Apply( nClientIdx );
 
 	return Plugin_Continue;
 }
@@ -118,6 +114,7 @@ Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 	}
 
 	int nClientIdx = GetClientOfUserId( GetEventInt( hEvent, "userid" ) );
+	g_bIsClientProtected[ nClientIdx ] = false;
 	g_bShouldClientReceiveProtection[ nClientIdx ] = true;
 	g_bHasLeftSpawnroom[ nClientIdx ] = false;
 
@@ -126,16 +123,16 @@ Action Event_PlayerDeath( Handle hEvent, char[] szName, bool bDontBroadcast )
 
 public void OnMapStart()
 {
-	CreateTimer( 1.0, Timer_ExtendProtection, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE );
+	CreateTimer( 1.0, Timer_ExtendProtection, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE );
 }
 
-Action Timer_ExtendProtection(Handle hTimer)
+Action Timer_ExtendProtection( Handle hTimer )
 {
 	for ( int nClientIdx = 1; nClientIdx <= MaxClients; nClientIdx++ )
 	{
 		if ( IsClientInGame( nClientIdx ) && g_bIsClientProtected[ nClientIdx ] && !g_bHasLeftSpawnroom[ nClientIdx ] )
 		{
-			float vOrigin[3];
+			float vOrigin[ 3 ];
 			GetClientAbsOrigin( nClientIdx, vOrigin );
 			if ( TF2Util_IsPointInRespawnRoom( vOrigin, nClientIdx, true ) )
 			{
@@ -179,10 +176,20 @@ public void OnClientDisconnect( int nClientIdx )
 
 public void TF2_OnConditionRemoved( int nClientIdx, TFCond eCondition )
 {
-	if ( eCondition == TFCond_Ubercharged && g_bIsClientProtected[ nClientIdx ] )
+	if ( eCondition != TFCond_Ubercharged || !g_bIsClientProtected[ nClientIdx ] )
 	{
-		g_bIsClientProtected[ nClientIdx ] = false;
+		return;
 	}
+
+	float flFadeDuration = sv_lptdm_spawnprotection_fade_duration.FloatValue;
+
+	// This is incredibly hacky, but doing this the right way
+	// would be a bit of a nightmare.
+	TF2_AddCondition( nClientIdx, TFCond_Ubercharged, flFadeDuration );
+	TF2_AddCondition( nClientIdx, TFCond_UberchargeFading, flFadeDuration );
+
+	g_bIsClientProtected[ nClientIdx ] = false;
+	g_nClientProtectionTime[ nClientIdx ] = 0.0;
 }
 
 public void TF2_OnWaitingForPlayersStart()
@@ -219,9 +226,15 @@ public Action OnPlayerRunCmd(
 		return Plugin_Continue;
 	}
 
+	if ( !IsPlayerAlive( nClientIdx ) )
+	{
+		return Plugin_Continue;
+	}
+
 	if ( view_as< bool >( nButtonMask & IN_ATTACK ) )
 	{
 		TF2_RemoveCondition( nClientIdx, TFCond_Ubercharged );
+
 		return Plugin_Continue;
 	}
 
@@ -232,6 +245,7 @@ public Action OnPlayerRunCmd(
 			if ( GetEntProp( nClientIdx, Prop_Send, "m_bShieldEquipped" ) == 1 )
 			{
 				TF2_RemoveCondition( nClientIdx, TFCond_Ubercharged );
+
 				return Plugin_Continue;
 			}
 		}
@@ -243,6 +257,7 @@ public Action OnPlayerRunCmd(
 			if ( g_nWeaponsWithSecondaryFire[ i ] == nWeaponItemDefinitionIdx )
 			{
 				TF2_RemoveCondition( nClientIdx, TFCond_Ubercharged );
+
 				return Plugin_Continue;
 			}
 		}
